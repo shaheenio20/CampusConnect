@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import EventCard from "../../components/EventCard";
@@ -84,7 +84,7 @@ const Home = () => {
             </Link>
             <Link
               to="/my-events"
-              className="btn btn-outline btn-lg rounded-2xl px-8 border-base-300 hover:bg-base-200 hover:border-base-300 w-full sm:w-auto font-semibold"
+              className="btn btn-outline btn-lg rounded-2xl px-8 border-base-300 hover:bg-purple-500 hover:border-purple-500 w-full sm:w-auto font-semibold"
             >
               My Saved Schedule
             </Link>

@@ -1,4 +1,3 @@
-import React from "react";
 
 const StatusBadge = ({ status }) => {
   if (status === "Open") {
