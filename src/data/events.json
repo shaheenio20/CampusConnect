@@ -94,5 +94,53 @@
     "featured": false,
     "status": "Closed",
     "seatsLeft": 0
+  },
+  {
+    "id": "evt-7",
+    "title": "Cybersecurity & Ethical Hacking Hands-on Workshop",
+    "category": "Workshop",
+    "date": "2026-09-22",
+    "startTime": "01:00 PM",
+    "endTime": "05:00 PM",
+    "venue": "Cyber Security Lab 305",
+    "organizer": "Network & Security Society",
+    "speaker": "James Vance (Certified Ethical Hacker & Penetration Tester)",
+    "description": "Learn network vulnerability analysis, web application security fundamentals, and ethical hacking techniques in a sandboxed lab.",
+    "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
+    "featured": false,
+    "status": "Open",
+    "seatsLeft": 20
+  },
+  {
+    "id": "evt-8",
+    "title": "Cloud Computing & DevOps Architecture with AWS",
+    "category": "Seminar",
+    "date": "2026-09-25",
+    "startTime": "10:30 AM",
+    "endTime": "01:30 PM",
+    "venue": "Seminar Room 104",
+    "organizer": "Cloud Engineering Student Guild",
+    "speaker": "Rachel Adams (Solutions Architect at CloudNative)",
+    "description": "Discover containerization with Docker, Kubernetes orchestration, and serverless AWS architecture for scalable applications.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
+    "featured": false,
+    "status": "Open",
+    "seatsLeft": 25
+  },
+  {
+    "id": "evt-9",
+    "title": "Women in Tech Leadership Summit & Networking",
+    "category": "Community",
+    "date": "2026-09-29",
+    "startTime": "02:00 PM",
+    "endTime": "06:00 PM",
+    "venue": "Student Union Grand Ballroom",
+    "organizer": "Women in STEM Alliance",
+    "speaker": "Panel of Female Tech Founders & Engineering VPs",
+    "description": "Inspiring panel discussions, mentorship speed-networking sessions, and career guidance for aspiring female tech leaders.",
+    "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80",
+    "featured": true,
+    "status": "Open",
+    "seatsLeft": 40
   }
 ]
