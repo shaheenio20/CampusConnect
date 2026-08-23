@@ -98,7 +98,7 @@ const Login = () => {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="btn btn-outline w-full rounded-2xl border-base-300 hover:bg-base-200 flex items-center justify-center gap-3 py-3 normal-case font-semibold text-base-content"
+          className="btn btn-outline w-full rounded-2xl border-base-300 hover:bg-primary/400 flex items-center justify-center gap-3 py-3 normal-case font-semibold text-base-content"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

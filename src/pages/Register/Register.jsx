@@ -136,7 +136,7 @@ const Register = () => {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="btn btn-outline w-full rounded-2xl border-base-300 hover:bg-base-200 flex items-center justify-center gap-3 py-3 normal-case font-semibold text-base-content text-sm"
+            className="btn btn-outline w-full rounded-2xl border-base-300 hover:bg-primary/400 flex items-center justify-center gap-3 py-3 normal-case font-semibold text-base-content text-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -278,7 +278,7 @@ const Register = () => {
               disabled={loading}
               className="btn btn-primary w-full rounded-2xl font-bold py-3 shadow-lg shadow-primary/25 hover:shadow-xl transition-all mt-4"
             >
-              {loading ? <span className="loading loading-spinner loading-sm"></span> : "Create Account & Register"}
+              {loading ? <span className="loading loading-spinner loading-sm"></span> : "Create New Account"}
             </button>
           </form>
         </div>

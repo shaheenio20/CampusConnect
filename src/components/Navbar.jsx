@@ -91,7 +91,7 @@ const Navbar = () => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/about" className={({ isActive }) => (isActive ? "text-primary font-bold border-b-2 border-primary rounded-none px-3 py-2 flex items-center gap-1.5" : "text-base-content/80 hover:text-primary font-medium transition-colors px-3 py-2 flex items-center gap-1.5")}>About</NavLink>
+              <NavLink to="/about" className={({ isActive }) => (isActive ? "text-primary font-bold border-b-2 border-primary rounded-none px-3 py-2 flex items-center gap-1.5" : "text-base-content/80 hover:text-primary font-medium transition-colors px-3 py-2 flex items-center gap-1.5")}>About Us</NavLink>
             </li>
           </ul>
         </div>
@@ -171,7 +171,7 @@ const Navbar = () => {
               {/* Register button visible on desktop, in sidebar on mobile */}
               <Link
                 to="/register"
-                className="hidden lg:inline-flex btn btn-outline btn-sm rounded-xl px-4 border-base-300 font-semibold text-base-content hover:bg-base-200"
+                className="hidden lg:inline-flex btn btn-outline btn-sm rounded-xl px-4 border-base-300 font-semibold text-base-content hover:bg-base-200 hover:text-black"
               >
                 Register
               </Link>
@@ -274,7 +274,7 @@ const Navbar = () => {
                     onClick={closeSidebar}
                     className="btn btn-primary rounded-2xl w-full text-white font-bold shadow-md shadow-primary/20 flex items-center justify-center gap-2"
                   >
-                    <span>📝 Register Sidebar Form</span>
+                    <span>📝 Register</span>
                   </Link>
                   <Link
                     to="/login"
