@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { showRegisterSuccessAlert, showRegisterErrorAlert } from "../../utils/alerts";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -50,18 +51,20 @@ const Register = () => {
       setLoading(true);
       setError("");
       await createUser(email, password, name, photoURL);
+      await showRegisterSuccessAlert(name);
       navigate(from, { replace: true });
     } catch (err) {
       console.error("Registration error:", err);
+      let errMsg = err.message || "Failed to create account. Please try again.";
       if (err.code === "auth/email-already-in-use") {
-        setError("This email address is already registered. Please log in.");
+        errMsg = "This email address is already registered. Please log in.";
       } else if (err.code === "auth/invalid-email") {
-        setError("Please enter a valid email address.");
+        errMsg = "Please enter a valid email address.";
       } else if (err.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters.");
-      } else {
-        setError(err.message || "Failed to create account. Please try again.");
+        errMsg = "Password should be at least 6 characters.";
       }
+      setError(errMsg);
+      showRegisterErrorAlert(errMsg);
     } finally {
       setLoading(false);
     }
@@ -71,11 +74,15 @@ const Register = () => {
     try {
       setLoading(true);
       setError("");
-      await googleLogin();
+      const res = await googleLogin();
+      const userName = res?.user?.displayName || "Student";
+      await showRegisterSuccessAlert(userName);
       navigate(from, { replace: true });
     } catch (err) {
       console.error("Google sign in error:", err);
-      setError(err.message || "Failed to sign in with Google.");
+      const errMsg = err.message || "Failed to sign in with Google.";
+      setError(errMsg);
+      showRegisterErrorAlert(errMsg);
     } finally {
       setLoading(false);
     }
@@ -222,9 +229,8 @@ const Register = () => {
                       src={url}
                       alt={`Avatar preset ${idx + 1}`}
                       onClick={() => setFormData({ ...formData, photoURL: url })}
-                      className={`w-7 h-7 rounded-full cursor-pointer object-cover border-2 transition-all ${
-                        formData.photoURL === url ? "border-primary scale-110" : "border-transparent opacity-70 hover:opacity-100"
-                      }`}
+                      className={`w-7 h-7 rounded-full cursor-pointer object-cover border-2 transition-all ${formData.photoURL === url ? "border-primary scale-110" : "border-transparent opacity-70 hover:opacity-100"
+                        }`}
                     />
                   ))}
                 </div>

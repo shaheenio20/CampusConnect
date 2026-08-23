@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { showLoginSuccessAlert, showLoginErrorAlert } from "../../utils/alerts";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -34,17 +35,20 @@ const Login = () => {
     try {
       setLoading(true);
       setError("");
-      await loginUser(email, password);
+      const userCredential = await loginUser(email, password);
+      const userName = userCredential?.user?.displayName || userCredential?.user?.email?.split("@")[0] || "";
+      await showLoginSuccessAlert(userName);
       navigate(from, { replace: true });
     } catch (err) {
       console.error("Login error:", err);
+      let errMsg = err.message || "Failed to log in. Please try again.";
       if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        setError("Invalid email or password. Please check your credentials.");
+        errMsg = "Invalid email or password. Please check your credentials.";
       } else if (err.code === "auth/invalid-email") {
-        setError("Please enter a valid email address.");
-      } else {
-        setError(err.message || "Failed to log in. Please try again.");
+        errMsg = "Please enter a valid email address.";
       }
+      setError(errMsg);
+      showLoginErrorAlert(errMsg);
     } finally {
       setLoading(false);
     }
@@ -54,11 +58,15 @@ const Login = () => {
     try {
       setLoading(true);
       setError("");
-      await googleLogin();
+      const res = await googleLogin();
+      const userName = res?.user?.displayName || "Student";
+      await showLoginSuccessAlert(userName);
       navigate(from, { replace: true });
     } catch (err) {
       console.error("Google sign in error:", err);
-      setError(err.message || "Failed to sign in with Google.");
+      const errMsg = err.message || "Failed to sign in with Google.";
+      setError(errMsg);
+      showLoginErrorAlert(errMsg);
     } finally {
       setLoading(false);
     }

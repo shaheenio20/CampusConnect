@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { showLogoutConfirmDialog, showLogoutSuccessAlert } from "../utils/alerts";
 
 const Navbar = () => {
   const { user, logoutUser, registeredEvents } = useAuth();
@@ -14,9 +15,13 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleLogout = async () => {
+    const confirmed = await showLogoutConfirmDialog();
+    if (!confirmed) return;
+
     try {
       await logoutUser();
       setIsSidebarOpen(false);
+      showLogoutSuccessAlert();
       navigate("/");
     } catch (err) {
       console.error("Logout error:", err);

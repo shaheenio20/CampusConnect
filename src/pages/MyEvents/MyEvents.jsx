@@ -2,21 +2,17 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import StatusBadge from "../../components/StatusBadge";
+import { showCancelBookingConfirmDialog, showBookingCancelledAlert } from "../../utils/alerts";
 
 const MyEvents = () => {
   const { user, registeredEvents, unregisterEvent } = useAuth();
-  const [toastMessage, setToastMessage] = useState(null);
 
-  const handleCancelBooking = (eventId, eventTitle) => {
-    unregisterEvent(eventId);
-    showToast(`Cancelled booking for "${eventTitle}".`);
-  };
-
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
+  const handleCancelBooking = async (eventId, eventTitle) => {
+    const confirmed = await showCancelBookingConfirmDialog(eventTitle);
+    if (confirmed) {
+      unregisterEvent(eventId);
+      showBookingCancelledAlert(eventTitle);
+    }
   };
 
   // Conflict Detection: check if any 2 registered events share the same date
@@ -37,17 +33,6 @@ const MyEvents = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 min-h-[75vh]">
-      {/* 🔔 Toast Notification */}
-      {toastMessage && (
-        <div className="toast toast-top toast-center z-50">
-          <div className="alert alert-info text-white shadow-xl rounded-2xl flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="font-semibold text-sm">{toastMessage}</span>
-          </div>
-        </div>
-      )}
 
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-primary/10 via-base-200 to-secondary/10 p-6 sm:p-8 rounded-3xl border border-base-200 flex flex-col md:flex-row md:items-center justify-between gap-4">

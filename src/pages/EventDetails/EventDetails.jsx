@@ -3,15 +3,18 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import StatusBadge from "../../components/StatusBadge";
 import { useAuth } from "../../context/AuthContext";
+import {
+  showBookingSuccessAlert,
+  showCancelBookingConfirmDialog,
+  showBookingCancelledAlert,
+  showAuthRequiredAlert,
+} from "../../utils/alerts";
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, registerEvent, unregisterEvent, isRegistered } = useAuth();
-
-  const [toastMessage, setToastMessage] = useState(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const event = eventsData.find((evt) => evt.id === id);
 
@@ -31,83 +34,39 @@ const EventDetails = () => {
   const registered = isRegistered(event.id);
   const isClosed = event.status === "Closed" || event.seatsLeft === 0;
 
-  const handleToggleRegistration = () => {
+  const handleToggleRegistration = async () => {
     if (!user) {
-      setShowAuthModal(true);
+      const loginConfirmed = await showAuthRequiredAlert();
+      if (loginConfirmed) {
+        navigate("/login", { state: { from: location } });
+      }
       return;
     }
 
     if (registered) {
-      unregisterEvent(event.id);
-      showToast("Registration cancelled successfully.");
+      const confirmed = await showCancelBookingConfirmDialog(event.title);
+      if (confirmed) {
+        unregisterEvent(event.id);
+        showBookingCancelledAlert(event.title);
+      }
     } else {
       const res = registerEvent(event);
       if (res.success) {
-        showToast("Successfully registered interest for this event! 🎉");
+        const goToMyEvents = await showBookingSuccessAlert(event.title);
+        if (goToMyEvents) {
+          navigate("/my-events");
+        }
       } else if (res.requireLogin) {
-        setShowAuthModal(true);
+        const loginConfirmed = await showAuthRequiredAlert();
+        if (loginConfirmed) {
+          navigate("/login", { state: { from: location } });
+        }
       }
     }
   };
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
-  };
-
   return (
     <div className="min-h-screen pb-16">
-      {/* 🔔 Toast Feedback Notification */}
-      {toastMessage && (
-        <div className="toast toast-top toast-center z-50">
-          <div className="alert alert-success text-white shadow-xl rounded-2xl flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="font-semibold text-sm">{toastMessage}</span>
-          </div>
-        </div>
-      )}
-
-      {/* 🔒 Auth Prompt Modal when user tries to book without login */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-base-100 p-8 rounded-3xl border border-base-200 max-w-md w-full shadow-2xl space-y-6 text-center animate-in fade-in zoom-in duration-200">
-            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 text-primary flex items-center justify-center text-3xl">
-              🔑
-            </div>
-            <div>
-              <h3 className="text-2xl font-extrabold text-base-content">Account Required</h3>
-              <p className="text-sm text-base-content/70 mt-2">
-                Please log in or register an account to book and store events in your schedule.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => navigate("/login", { state: { from: location } })}
-                className="btn btn-primary rounded-2xl font-bold text-white shadow-md"
-              >
-                Log In Now
-              </button>
-              <button
-                onClick={() => navigate("/register", { state: { from: location } })}
-                className="btn btn-outline rounded-2xl font-bold"
-              >
-                Register New Account
-              </button>
-              <button
-                onClick={() => setShowAuthModal(false)}
-                className="btn btn-ghost btn-sm text-base-content/60"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ⬅️ Back Navigation Bar */}
       <div className="bg-base-200/50 border-b border-base-200 py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -290,13 +249,12 @@ const EventDetails = () => {
                 <button
                   onClick={handleToggleRegistration}
                   disabled={isClosed && !registered}
-                  className={`btn w-full btn-lg rounded-2xl font-bold shadow-md transition-all ${
-                    registered
+                  className={`btn w-full btn-lg rounded-2xl font-bold shadow-md transition-all ${registered
                       ? "btn-error text-white"
                       : isClosed
-                      ? "btn-disabled bg-base-300 text-base-content/50"
-                      : "btn-primary shadow-primary/25"
-                  }`}
+                        ? "btn-disabled bg-base-300 text-base-content/50"
+                        : "btn-primary shadow-primary/25"
+                    }`}
                 >
                   {registered ? (
                     <>
