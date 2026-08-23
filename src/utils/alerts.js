@@ -119,13 +119,24 @@ export const showBookingSuccessAlert = async (eventTitle) => {
 export const showAlreadyBookedAlert = async (eventTitle) => {
   const result = await customSwal.fire({
     icon: "info",
-    title: "Already Registered",
-    text: `"${eventTitle}" is already in your booked events schedule!`,
+    title: "Already Saved in My Events! 📅",
+    text: `"${eventTitle}" is already booked and saved in your personal event schedule.`,
     showCancelButton: true,
+    showDenyButton: true,
     confirmButtonText: "View My Events 📅",
+    denyButtonText: "Cancel Booking",
     cancelButtonText: "Close",
+    customClass: {
+      popup: "rounded-3xl shadow-2xl bg-base-100 border border-base-200 p-6 font-sans",
+      title: "text-2xl font-black text-base-content tracking-tight",
+      htmlContainer: "text-sm text-base-content/80 mt-2",
+      confirmButton: "btn btn-primary rounded-2xl px-5 py-2 font-bold text-white shadow-md mx-1",
+      denyButton: "btn btn-error text-white rounded-2xl px-5 py-2 font-bold shadow-md mx-1",
+      cancelButton: "btn btn-ghost border border-base-300 rounded-2xl px-5 py-2 font-semibold mx-1 text-base-content/70 hover:bg-base-200",
+    },
+    buttonsStyling: false,
   });
-  return result.isConfirmed;
+  return result;
 };
 
 // 5. CANCEL OR DELETE BOOKING ALERTS (SweetAlert2)

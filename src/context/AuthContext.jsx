@@ -120,12 +120,10 @@ export const AuthProvider = ({ children }) => {
     if (!user) {
       return { success: false, requireLogin: true };
     }
-    let added = false;
-    setRegisteredEvents((prev) => {
-      if (prev.some((e) => e.id === event.id)) return prev;
-      added = true;
-      return [...prev, { ...event, bookedAt: new Date().toISOString() }];
-    });
+    if (registeredEvents.some((e) => e.id === event.id)) {
+      return { success: false, alreadyBooked: true };
+    }
+    setRegisteredEvents((prev) => [...prev, { ...event, bookedAt: new Date().toISOString() }]);
     return { success: true };
   };
 

@@ -5,6 +5,7 @@ import StatusBadge from "../../components/StatusBadge";
 import { useAuth } from "../../context/AuthContext";
 import {
   showBookingSuccessAlert,
+  showAlreadyBookedAlert,
   showCancelBookingConfirmDialog,
   showBookingCancelledAlert,
   showAuthRequiredAlert,
@@ -44,16 +45,26 @@ const EventDetails = () => {
     }
 
     if (registered) {
-      const confirmed = await showCancelBookingConfirmDialog(event.title);
-      if (confirmed) {
-        unregisterEvent(event.id);
-        showBookingCancelledAlert(event.title);
+      const result = await showAlreadyBookedAlert(event.title);
+      if (result.isConfirmed) {
+        navigate("/my-events");
+      } else if (result.isDenied) {
+        const confirmedCancel = await showCancelBookingConfirmDialog(event.title);
+        if (confirmedCancel) {
+          unregisterEvent(event.id);
+          showBookingCancelledAlert(event.title);
+        }
       }
     } else {
       const res = registerEvent(event);
       if (res.success) {
         const goToMyEvents = await showBookingSuccessAlert(event.title);
         if (goToMyEvents) {
+          navigate("/my-events");
+        }
+      } else if (res.alreadyBooked) {
+        const result = await showAlreadyBookedAlert(event.title);
+        if (result.isConfirmed) {
           navigate("/my-events");
         }
       } else if (res.requireLogin) {
