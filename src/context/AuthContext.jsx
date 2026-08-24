@@ -116,15 +116,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   // User Event Booking Functions
-  const registerEvent = (event) => {
+  const getConflictingEvent = (event) => {
+    if (!event || !event.date) return null;
+    return registeredEvents.find((e) => e.date === event.date && e.id !== event.id) || null;
+  };
+
+  const registerEvent = (event, force = false) => {
     if (!user) {
       return { success: false, requireLogin: true };
     }
     if (registeredEvents.some((e) => e.id === event.id)) {
       return { success: false, alreadyBooked: true };
     }
+    const conflictingEvent = getConflictingEvent(event);
+    if (conflictingEvent && !force) {
+      return { success: false, conflict: true, conflictingEvent };
+    }
     setRegisteredEvents((prev) => [...prev, { ...event, bookedAt: new Date().toISOString() }]);
-    return { success: true };
+    return { success: true, hadConflict: !!conflictingEvent };
   };
 
   const unregisterEvent = (eventId) => {
@@ -148,6 +157,7 @@ export const AuthProvider = ({ children }) => {
     registerEvent,
     unregisterEvent,
     isRegistered,
+    getConflictingEvent,
   };
 
   return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;

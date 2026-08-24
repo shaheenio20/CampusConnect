@@ -183,3 +183,25 @@ export const showAuthRequiredAlert = async () => {
   });
   return result.isConfirmed;
 };
+
+// 7. SCHEDULE CONFLICT WARNING ALERT (SweetAlert2)
+export const showConflictWarningAlert = async (newEventTitle, existingEventTitle, date) => {
+  const result = await customSwal.fire({
+    icon: "warning",
+    title: "Schedule Conflict Warning! ⚠️",
+    html: `You are already registered for <strong>"${existingEventTitle}"</strong> on <strong>${date}</strong>.<br/><br/>Do you still want to register for <strong>"${newEventTitle}"</strong>?`,
+    showCancelButton: true,
+    confirmButtonText: "Yes, Book Anyway",
+    cancelButtonText: "Cancel",
+    customClass: {
+      popup: "rounded-3xl shadow-2xl bg-base-100 border border-base-200 p-6 font-sans",
+      title: "text-2xl font-black text-amber-600 tracking-tight",
+      htmlContainer: "text-sm text-base-content/80 mt-2",
+      confirmButton: "btn btn-warning text-slate-900 rounded-2xl px-6 py-2 font-bold shadow-md mx-1",
+      cancelButton: "btn btn-ghost border border-base-300 rounded-2xl px-6 py-2 font-semibold mx-1 text-base-content/70 hover:bg-base-200",
+    },
+    buttonsStyling: false,
+  });
+  return result.isConfirmed;
+};
+

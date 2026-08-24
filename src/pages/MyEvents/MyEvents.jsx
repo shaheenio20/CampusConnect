@@ -15,18 +15,23 @@ const MyEvents = () => {
     }
   };
 
-  // Conflict Detection: check if any 2 registered events share the same date
+  // Conflict Detection: check if any 2 or more registered events share the same date
   const detectConflicts = () => {
-    const dateMap = {};
-    const conflicts = [];
+    const grouped = {};
     registeredEvents.forEach((evt) => {
-      if (dateMap[evt.date]) {
-        conflicts.push({ date: evt.date, event1: dateMap[evt.date].title, event2: evt.title });
-      } else {
-        dateMap[evt.date] = evt;
+      if (!grouped[evt.date]) {
+        grouped[evt.date] = [];
+      }
+      grouped[evt.date].push(evt);
+    });
+
+    const conflictGroups = [];
+    Object.keys(grouped).forEach((date) => {
+      if (grouped[date].length > 1) {
+        conflictGroups.push({ date, events: grouped[date] });
       }
     });
-    return conflicts;
+    return conflictGroups;
   };
 
   const conflicts = detectConflicts();
@@ -60,15 +65,23 @@ const MyEvents = () => {
 
       {/* Schedule Conflict Warning */}
       {conflicts.length > 0 && (
-        <div className="alert alert-warning shadow-lg rounded-2xl border border-warning/30 flex items-start gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 text-warning-content mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="alert bg-warning/15 border border-warning/30 shadow-lg rounded-2xl p-4 flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <div>
-            <h3 className="font-bold text-sm text-warning-content">Schedule Overlap Alert!</h3>
+          <div className="w-full space-y-1">
+            <h3 className="font-bold text-sm text-base-content flex items-center gap-2">
+              <span>Schedule Overlap Alert!</span>
+              <span className="badge badge-sm badge-warning font-extrabold">{conflicts.length} Date Conflict{conflicts.length > 1 ? "s" : ""}</span>
+            </h3>
             {conflicts.map((conf, idx) => (
-              <p key={idx} className="text-xs text-warning-content/90 mt-0.5">
-                You have multiple events scheduled on <strong>{conf.date}</strong> (e.g. "{conf.event1}" & "{conf.event2}"). Please review your timeline.
+              <p key={idx} className="text-xs text-base-content/80 mt-1 leading-relaxed">
+                You have <strong>{conf.events.length} events</strong> scheduled on <strong>{conf.date}</strong>:{" "}
+                {conf.events.map((e, i) => (
+                  <span key={e.id}>
+                    <strong className="text-primary font-semibold">"{e.title}"</strong> ({e.startTime}){i < conf.events.length - 1 ? " & " : ""}
+                  </span>
+                ))}. Please review your schedule.
               </p>
             ))}
           </div>
@@ -109,32 +122,41 @@ const MyEvents = () => {
 
           {/* Booked Event Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {registeredEvents.map((event) => (
-              <div
-                key={event.id}
-                className="bg-base-100 border border-base-200 rounded-3xl overflow-hidden shadow-md flex flex-col justify-between hover:shadow-xl transition-all"
-              >
-                <div>
-                  <div className="relative h-44 w-full">
-                    <img
-                      src={event.image}
-                      alt={event.title}
-                      onError={(e) => {
-                        e.target.src = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
-                      }}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-3 left-3">
-                      <span className="badge badge-primary text-white font-bold text-xs shadow-md">
-                        {event.category}
-                      </span>
+            {registeredEvents.map((event) => {
+              const hasConflict = registeredEvents.some((e) => e.date === event.date && e.id !== event.id);
+              return (
+                <div
+                  key={event.id}
+                  className={`bg-base-100 border rounded-3xl overflow-hidden shadow-md flex flex-col justify-between hover:shadow-xl transition-all ${
+                    hasConflict ? "border-warning ring-2 ring-warning/20" : "border-base-200"
+                  }`}
+                >
+                  <div>
+                    <div className="relative h-44 w-full">
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
+                        }}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                        <span className="badge badge-primary text-white font-bold text-xs shadow-md">
+                          {event.category}
+                        </span>
+                      </div>
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        {hasConflict && (
+                          <span className="badge bg-amber-500 text-slate-900 font-bold text-xs shadow-md border-none animate-pulse">
+                            ⚠️ Overlap
+                          </span>
+                        )}
+                        <StatusBadge status={event.status} />
+                      </div>
                     </div>
-                    <div className="absolute top-3 right-3">
-                      <StatusBadge status={event.status} />
-                    </div>
-                  </div>
 
-                  <div className="p-5 space-y-3">
+                    <div className="p-5 space-y-3">
                     <h3 className="font-bold text-lg text-base-content line-clamp-2">
                       {event.title}
                     </h3>
@@ -177,7 +199,8 @@ const MyEvents = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         </div>
       )}

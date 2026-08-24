@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
+import { useAuth } from "../context/AuthContext";
 
 const EventCard = ({ event }) => {
+  const { isRegistered, getConflictingEvent } = useAuth();
+  const registered = isRegistered ? isRegistered(event.id) : false;
+  const conflictingEvent = !registered && getConflictingEvent ? getConflictingEvent(event) : null;
+
   return (
     <div className="card bg-base-100 shadow-xl border border-base-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full rounded-2xl overflow-hidden">
       <figure className="relative h-48 w-full overflow-hidden">
@@ -19,7 +24,19 @@ const EventCard = ({ event }) => {
             {event.category}
           </span>
         </div>
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          {registered ? (
+            <span className="badge bg-emerald-500 text-white font-bold px-2 py-1 text-[10px] shadow-md border-none">
+              ✓ Registered
+            </span>
+          ) : conflictingEvent ? (
+            <span
+              className="badge bg-amber-500 text-slate-900 font-bold px-2 py-1 text-[10px] shadow-md border-none"
+              title={`Conflicts with "${conflictingEvent.title}"`}
+            >
+              ⚠️ Conflict
+            </span>
+          ) : null}
           <StatusBadge status={event.status} />
         </div>
         <div className="absolute bottom-3 left-3 text-white text-xs font-medium flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">
