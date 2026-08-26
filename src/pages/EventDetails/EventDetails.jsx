@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import StatusBadge from "../../components/StatusBadge";
@@ -290,12 +289,13 @@ const EventDetails = () => {
                 <button
                   onClick={handleToggleRegistration}
                   disabled={isClosed && !registered}
-                  className={`btn w-full btn-lg rounded-2xl font-bold shadow-md transition-all ${registered
+                  className={`btn w-full btn-lg rounded-2xl font-bold shadow-md transition-all ${
+                    registered
                       ? "btn-error text-white"
                       : isClosed
-                        ? "btn-disabled bg-base-300 text-base-content/50"
+                        ? "bg-red-600 hover:bg-red-600 text-white border-none cursor-not-allowed opacity-90"
                         : "btn-primary shadow-primary/25"
-                    }`}
+                  }`}
                 >
                   {registered ? (
                     <>
