@@ -4,7 +4,7 @@ import eventsData from "../../data/events.json";
 import EventCard from "../../components/EventCard";
 
 const CATEGORIES = ["All", "Workshop", "Programming", "Seminar", "Career", "Community"];
-const STATUSES = ["All", "Registration Open", "Upcoming", "Closed"];
+const STATUSES = ["All", "Open", "Almost Full", "Closed"];
 
 const Events = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -102,7 +102,7 @@ const Events = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="select select-bordered w-full rounded-2xl text-sm focus:select-primary"
+              className="select select-bordered w-full rounded-2xl text-sm text-bold text-black font-semibold focus:select-primary"
             >
               <option value="All">All Statuses</option>
               {STATUSES.filter((s) => s !== "All").map((st) => (
