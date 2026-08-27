@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import EventCard from "../../components/EventCard";
+import EventSkeleton from "../../components/EventSkeleton";
 
 const CATEGORIES = ["All", "Workshop", "Programming", "Seminar", "Career", "Community"];
 const STATUSES = ["All", "Open", "Almost Full", "Closed"];
@@ -11,12 +12,30 @@ const Events = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initial page load simulated loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Sync category from URL query parameter (e.g. /events?category=Workshop)
   useEffect(() => {
     const categoryParam = searchParams.get("category");
-    if (categoryParam && CATEGORIES.includes(categoryParam)) {
-      setSelectedCategory(categoryParam);
+    if (categoryParam) {
+      const foundCategory = CATEGORIES.find(
+        (cat) => cat.toLowerCase() === categoryParam.toLowerCase()
+      );
+      if (foundCategory) {
+        setSelectedCategory(foundCategory);
+      } else {
+        setSelectedCategory("All");
+      }
+    } else {
+      setSelectedCategory("All");
     }
   }, [searchParams]);
 
@@ -102,7 +121,7 @@ const Events = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="select select-bordered w-full rounded-2xl text-sm text-bold text-black font-semibold focus:select-primary"
+              className="select select-bordered w-full rounded-2xl text-sm font-semibold focus:select-primary"
             >
               <option value="All">All Statuses</option>
               {STATUSES.filter((s) => s !== "All").map((st) => (
@@ -149,7 +168,13 @@ const Events = () => {
       </div>
 
       {/* 🎴 Events Grid */}
-      {filteredEvents.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <EventSkeleton key={index} />
+          ))}
+        </div>
+      ) : filteredEvents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
           {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} />

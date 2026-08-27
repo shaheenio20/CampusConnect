@@ -1,10 +1,21 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import StatusBadge from "../../components/StatusBadge";
+import EventSkeleton from "../../components/EventSkeleton";
 import { showCancelBookingConfirmDialog, showBookingCancelledAlert } from "../../utils/alerts";
+import { getConflictGroups, doEventsConflict } from "../../utils/conflictUtils";
 
 const MyEvents = () => {
   const { user, registeredEvents, unregisterEvent } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCancelBooking = async (eventId, eventTitle) => {
     const confirmed = await showCancelBookingConfirmDialog(eventTitle);
@@ -14,26 +25,8 @@ const MyEvents = () => {
     }
   };
 
-  // Conflict Detection: check if any 2 or more registered events share the same date
-  const detectConflicts = () => {
-    const grouped = {};
-    registeredEvents.forEach((evt) => {
-      if (!grouped[evt.date]) {
-        grouped[evt.date] = [];
-      }
-      grouped[evt.date].push(evt);
-    });
-
-    const conflictGroups = [];
-    Object.keys(grouped).forEach((date) => {
-      if (grouped[date].length > 1) {
-        conflictGroups.push({ date, events: grouped[date] });
-      }
-    });
-    return conflictGroups;
-  };
-
-  const conflicts = detectConflicts();
+  // Accurate Conflict Detection: check if any 2 or more registered events have overlapping dates AND time slots
+  const conflicts = getConflictGroups(registeredEvents);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 min-h-[75vh]">
@@ -88,7 +81,13 @@ const MyEvents = () => {
       )}
 
       {/* Main Content Area */}
-      {registeredEvents.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <EventSkeleton key={idx} />
+          ))}
+        </div>
+      ) : registeredEvents.length === 0 ? (
         <div className="bg-base-100 border border-base-200 rounded-3xl p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
           <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 text-primary flex items-center justify-center text-4xl">
             📅
@@ -122,7 +121,7 @@ const MyEvents = () => {
           {/* Booked Event Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {registeredEvents.map((event) => {
-              const hasConflict = registeredEvents.some((e) => e.date === event.date && e.id !== event.id);
+              const hasConflict = registeredEvents.some((e) => doEventsConflict(event, e));
               return (
                 <div
                   key={event.id}

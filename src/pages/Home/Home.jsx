@@ -1,16 +1,22 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import EventCard from "../../components/EventCard";
+import EventSkeleton from "../../components/EventSkeleton";
 
 const Home = () => {
   const [featuredEvents, setFeaturedEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Filter featured events from JSON data
+    // Filter featured events from JSON data with smooth loading state
     const featured = eventsData.filter((evt) => evt.featured).slice(0, 3);
     setFeaturedEvents(featured);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
   const categories = [
@@ -160,9 +166,15 @@ const Home = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, idx) => (
+              <EventSkeleton key={idx} />
+            ))
+          ) : (
+            featuredEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))
+          )}
         </div>
       </section>
 

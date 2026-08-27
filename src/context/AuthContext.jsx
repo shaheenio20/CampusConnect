@@ -9,6 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "../firebase/firebase.config";
+import { getConflictingEvent as checkConflictingEvent } from "../utils/conflictUtils";
 
 const AuthContext = createContext(null);
 
@@ -117,8 +118,8 @@ export const AuthProvider = ({ children }) => {
 
   // User Event Booking Functions
   const getConflictingEvent = (event) => {
-    if (!event || !event.date) return null;
-    return registeredEvents.find((e) => e.date === event.date && e.id !== event.id) || null;
+    if (!event) return null;
+    return checkConflictingEvent(event, registeredEvents);
   };
 
   const registerEvent = (event, force = false) => {

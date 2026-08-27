@@ -185,11 +185,24 @@ export const showAuthRequiredAlert = async () => {
 };
 
 // 7. SCHEDULE CONFLICT WARNING ALERT (SweetAlert2)
-export const showConflictWarningAlert = async (newEventTitle, existingEventTitle, date) => {
+export const showConflictWarningAlert = async (
+  newEventTitle,
+  existingEventTitle,
+  date,
+  existingTimeSlot = "",
+  newTimeSlot = ""
+) => {
+  const timeDetails = existingTimeSlot && newTimeSlot
+    ? `<div className="my-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-left text-xs space-y-1">
+         <p><strong>Overlapping Event:</strong> ${existingEventTitle} (${existingTimeSlot})</p>
+         <p><strong>Requested Event:</strong> ${newEventTitle} (${newTimeSlot})</p>
+       </div>`
+    : "";
+
   const result = await customSwal.fire({
     icon: "warning",
     title: "Schedule Conflict Warning! ⚠️",
-    html: `You are already registered for <strong>"${existingEventTitle}"</strong> on <strong>${date}</strong>.<br/><br/>Do you still want to register for <strong>"${newEventTitle}"</strong>?`,
+    html: `You are already registered for <strong>"${existingEventTitle}"</strong> on <strong>${date}</strong> with an overlapping time slot.<br/>${timeDetails}<br/>Do you still want to register for <strong>"${newEventTitle}"</strong>?`,
     showCancelButton: true,
     confirmButtonText: "Yes, Book Anyway",
     cancelButtonText: "Cancel",

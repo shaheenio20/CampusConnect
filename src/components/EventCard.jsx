@@ -31,10 +31,10 @@ const EventCard = ({ event }) => {
             </span>
           ) : conflictingEvent ? (
             <span
-              className="badge bg-amber-500 text-slate-900 font-bold px-2 py-1 text-[10px] shadow-md border-none"
-              title={`Conflicts with "${conflictingEvent.title}"`}
+              className="badge bg-amber-500 text-slate-900 font-bold px-2 py-1 text-[10px] shadow-md border-none cursor-help"
+              title={`Time conflict with "${conflictingEvent.title}" (${conflictingEvent.startTime} - ${conflictingEvent.endTime})`}
             >
-              ⚠️ Conflict
+              ⚠️ Time Overlap
             </span>
           ) : null}
           <StatusBadge status={event.status} />

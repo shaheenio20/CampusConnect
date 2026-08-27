@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import StatusBadge from "../../components/StatusBadge";
@@ -32,6 +33,8 @@ const EventDetails = () => {
     );
   }
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const registered = isRegistered(event.id);
   const conflictingEvent = getConflictingEvent(event);
   const isClosed = event.status === "Closed" || event.seatsLeft === 0;
@@ -45,49 +48,58 @@ const EventDetails = () => {
       return;
     }
 
-    if (registered) {
-      const result = await showAlreadyBookedAlert(event.title);
-      if (result.isConfirmed) {
-        navigate("/my-events");
-      } else if (result.isDenied) {
-        const confirmedCancel = await showCancelBookingConfirmDialog(event.title);
-        if (confirmedCancel) {
-          unregisterEvent(event.id);
-          showBookingCancelledAlert(event.title);
-        }
-      }
-    } else {
-      let res = registerEvent(event);
-
-      if (res.conflict) {
-        const confirmConflict = await showConflictWarningAlert(
-          event.title,
-          res.conflictingEvent.title,
-          event.date
-        );
-        if (confirmConflict) {
-          res = registerEvent(event, true);
-        } else {
-          return;
-        }
-      }
-
-      if (res.success) {
-        const goToMyEvents = await showBookingSuccessAlert(event.title);
-        if (goToMyEvents) {
-          navigate("/my-events");
-        }
-      } else if (res.alreadyBooked) {
+    setIsProcessing(true);
+    try {
+      if (registered) {
         const result = await showAlreadyBookedAlert(event.title);
         if (result.isConfirmed) {
           navigate("/my-events");
+        } else if (result.isDenied) {
+          const confirmedCancel = await showCancelBookingConfirmDialog(event.title);
+          if (confirmedCancel) {
+            unregisterEvent(event.id);
+            showBookingCancelledAlert(event.title);
+          }
         }
-      } else if (res.requireLogin) {
-        const loginConfirmed = await showAuthRequiredAlert();
-        if (loginConfirmed) {
-          navigate("/login", { state: { from: location } });
+      } else {
+        let res = registerEvent(event);
+
+        if (res.conflict) {
+          const existingSlot = `${res.conflictingEvent.startTime} - ${res.conflictingEvent.endTime}`;
+          const newSlot = `${event.startTime} - ${event.endTime}`;
+          const confirmConflict = await showConflictWarningAlert(
+            event.title,
+            res.conflictingEvent.title,
+            event.date,
+            existingSlot,
+            newSlot
+          );
+          if (confirmConflict) {
+            res = registerEvent(event, true);
+          } else {
+            return;
+          }
+        }
+
+        if (res.success) {
+          const goToMyEvents = await showBookingSuccessAlert(event.title);
+          if (goToMyEvents) {
+            navigate("/my-events");
+          }
+        } else if (res.alreadyBooked) {
+          const result = await showAlreadyBookedAlert(event.title);
+          if (result.isConfirmed) {
+            navigate("/my-events");
+          }
+        } else if (res.requireLogin) {
+          const loginConfirmed = await showAuthRequiredAlert();
+          if (loginConfirmed) {
+            navigate("/login", { state: { from: location } });
+          }
         }
       }
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -288,7 +300,7 @@ const EventDetails = () => {
 
                 <button
                   onClick={handleToggleRegistration}
-                  disabled={isClosed && !registered}
+                  disabled={(isClosed && !registered) || isProcessing}
                   className={`btn w-full btn-lg rounded-2xl font-bold shadow-md transition-all ${
                     registered
                       ? "btn-error text-white"
@@ -297,7 +309,12 @@ const EventDetails = () => {
                         : "btn-primary shadow-primary/25"
                   }`}
                 >
-                  {registered ? (
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <span className="loading loading-spinner loading-md"></span>
+                      <span>Processing...</span>
+                    </div>
+                  ) : registered ? (
                     <>
                       <span>Cancel Registration</span>
                     </>
