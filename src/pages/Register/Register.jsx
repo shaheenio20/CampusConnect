@@ -86,17 +86,11 @@ const Register = () => {
       setError("");
       const res = await googleLogin();
       const userName = res?.user?.displayName || "Student";
-      const userEmail = res?.user?.email || "";
-      // Log out immediately so registration does not bypass login step
-      await logoutUser();
       await showRegisterSuccessAlert(userName);
-      navigate("/login", {
+      navigate(targetFrom, {
         replace: true,
         state: {
-          from: targetFrom,
-          registeredEmail: userEmail,
           autoBook: location.state?.autoBook || false,
-          justRegistered: true,
         },
       });
     } catch (err) {
