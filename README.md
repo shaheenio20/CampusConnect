@@ -33,27 +33,21 @@ Built with **React 19**, **Vite**, **Tailwind CSS**, and **Firebase Authenticati
 
 ---
 
-## ⚠️ Specific Problems & How They Were Overcome
+## 🎯 Specific Problem & Technical Solution
 
-During the development of CampusConnect, key architectural challenges were identified and engineered for optimal user experience:
+### ⚠️ Problem: Firebase Session Auto-Bypass During Account Registration
 
-### 1. 🔒 Firebase Session Auto-Bypass During Registration
-* **The Problem:** Firebase Auth's `createUserWithEmailAndPassword()` automatically authenticates the user upon account creation. Previously, this meant users who created an account were immediately logged in and bypassed the login page, landing directly in event booking without a distinct login step.
-* **How It Was Overcome:**
-  * Implemented an explicit authentication workflow in `Register.jsx`. When a user signs up using Email & Password, the app immediately revokes the temporary session (`logoutUser()`) and redirects them to `/login` with their registered email pre-filled and a success banner.
-  * For **Google OAuth**, since Google already verifies identity in 1-click, the flow smoothly retains the authenticated session and directly navigates the user to complete their booking.
+* **The Problem Context:** 
+  In standard Firebase Authentication, when a new user registers an account using `createUserWithEmailAndPassword()`, Firebase automatically signs in the user on the client side. In CampusConnect, this created an issue where new users registering for an account bypassed the required **Login page** and were immediately logged in to complete event booking without verifying their login credentials first.
 
-### 2. ⏰ Overlapping Event Schedule Conflicts
-* **The Problem:** Students registering for multiple campus events often face time overlaps (e.g., two workshops scheduled on the same date with overlapping time slots).
-* **How It Was Overcome:**
-  * Created a specialized utility engine (`src/utils/conflictUtils.js`) that converts time strings (e.g., `"10:00 AM - 12:30 PM"`) into minutes since midnight and evaluates range overlaps across the user's booked events on identical dates.
-  * Integrated visual **"⚠️ Time Overlap"** badges on event cards, schedule conflict warnings on event detail pages, and interactive **SweetAlert2 conflict prompts** allowing users to confirm whether they still wish to register despite the schedule overlap.
+* **Impact:** 
+  This broken flow meant users could not experience a structured **Register → Log In → Book & Save Event** pipeline, which is essential for user identity verification and account setup.
 
-### 3. 👥 Multi-User Data Isolation on Shared Devices
-* **The Problem:** Storing registered events in a global localStorage key caused user schedules to leak between different accounts on shared campus computers.
-* **How It Was Overcome:**
-  * Designed a user-isolated storage key strategy (`campus_events_${currentUser.uid}`) tied directly to Firebase `uid`.
-  * Included an automatic migration check for legacy data to ensure smooth upgrades without data loss.
+* **The Solution Implemented:**
+  1. **Session Revocation & Logout (`Register.jsx`)**: Immediately after account creation via `createUser()`, the application calls `logoutUser()` to revoke the auto-authenticated session.
+  2. **Seamless Redirection with Pre-Filled Credentials**: The user is redirected to `/login` with their newly registered email pre-filled into the form and a success alert (`"🎉 Registration successful! Please log in with your credentials to proceed."`).
+  3. **Intelligent Google OAuth Handling**: For users registering via Google OAuth ("Continue with Google"), since Google already verifies user identity in 1-click, the app maintains the session and directly navigates to complete event booking.
+  4. **Post-Login Auto-Booking (`EventDetails.jsx`)**: Once the user enters their password and logs in on `/login`, they are navigated back to the event page where an automated effect completes their event booking and saves it to their personal schedule.
 
 ---
 
