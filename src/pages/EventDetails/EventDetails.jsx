@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import eventsData from "../../data/events.json";
 import StatusBadge from "../../components/StatusBadge";
@@ -20,6 +20,56 @@ const EventDetails = () => {
 
   const event = eventsData.find((evt) => evt.id === id);
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const registered = event ? isRegistered(event.id) : false;
+  const conflictingEvent = event ? getConflictingEvent(event) : null;
+  const isClosed = event ? (event.status === "Closed" || event.seatsLeft === 0) : false;
+
+  // Auto-book after successful registration & login sequence
+  useEffect(() => {
+    if (user && location.state?.autoBook && event && !registered && !isProcessing) {
+      const executeAutoBook = async () => {
+        setIsProcessing(true);
+        try {
+          let res = registerEvent(event);
+
+          if (res.conflict) {
+            const existingSlot = `${res.conflictingEvent.startTime} - ${res.conflictingEvent.endTime}`;
+            const newSlot = `${event.startTime} - ${event.endTime}`;
+            const confirmConflict = await showConflictWarningAlert(
+              event.title,
+              res.conflictingEvent.title,
+              event.date,
+              existingSlot,
+              newSlot
+            );
+            if (confirmConflict) {
+              res = registerEvent(event, true);
+            } else {
+              return;
+            }
+          }
+
+          if (res.success) {
+            const goToMyEvents = await showBookingSuccessAlert(event.title);
+            if (goToMyEvents) {
+              navigate("/my-events");
+            }
+          } else if (res.alreadyBooked) {
+            await showAlreadyBookedAlert(event.title);
+          }
+        } finally {
+          setIsProcessing(false);
+          // Clear autoBook state from location
+          navigate(location.pathname, { replace: true, state: {} });
+        }
+      };
+
+      executeAutoBook();
+    }
+  }, [user, location.state?.autoBook, event?.id]);
+
   if (!event) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-6">
@@ -33,17 +83,11 @@ const EventDetails = () => {
     );
   }
 
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const registered = isRegistered(event.id);
-  const conflictingEvent = getConflictingEvent(event);
-  const isClosed = event.status === "Closed" || event.seatsLeft === 0;
-
   const handleToggleRegistration = async () => {
     if (!user) {
       const loginConfirmed = await showAuthRequiredAlert();
       if (loginConfirmed) {
-        navigate("/login", { state: { from: location } });
+        navigate("/login", { state: { from: location, autoBook: true } });
       }
       return;
     }
@@ -94,7 +138,7 @@ const EventDetails = () => {
         } else if (res.requireLogin) {
           const loginConfirmed = await showAuthRequiredAlert();
           if (loginConfirmed) {
-            navigate("/login", { state: { from: location } });
+            navigate("/login", { state: { from: location, autoBook: true } });
           }
         }
       }

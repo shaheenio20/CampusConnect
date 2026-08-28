@@ -37,10 +37,10 @@ export const showToast = ({ icon = "success", title = "" }) => {
 export const showRegisterSuccessAlert = async (userName) => {
   return customSwal.fire({
     icon: "success",
-    title: "Account Created! 🎉",
-    text: `Welcome to CampusConnect${userName ? `, ${userName}` : ""}! Your account has been registered successfully.`,
-    confirmButtonText: "Explore Events 🚀",
-    timer: 3000,
+    title: "Registration Successful! 🎉",
+    text: `Account for ${userName || "you"} has been created! Please log in to complete event booking & access your schedule.`,
+    confirmButtonText: "Proceed to Log In 🔑",
+    timer: 3500,
     timerProgressBar: true,
   });
 };

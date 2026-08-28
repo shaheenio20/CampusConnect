@@ -15,11 +15,11 @@ const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { createUser, googleLogin } = useAuth();
+  const { createUser, googleLogin, logoutUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || "/";
+  const targetFrom = location.state?.from || "/";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,8 +51,18 @@ const Register = () => {
       setLoading(true);
       setError("");
       await createUser(email, password, name, photoURL);
+      // Log out immediately so registration does not bypass login step
+      await logoutUser();
       await showRegisterSuccessAlert(name);
-      navigate(from, { replace: true });
+      navigate("/login", {
+        replace: true,
+        state: {
+          from: targetFrom,
+          registeredEmail: email,
+          autoBook: location.state?.autoBook || false,
+          justRegistered: true,
+        },
+      });
     } catch (err) {
       console.error("Registration error:", err);
       let errMsg = err.message || "Failed to create account. Please try again.";
@@ -76,8 +86,19 @@ const Register = () => {
       setError("");
       const res = await googleLogin();
       const userName = res?.user?.displayName || "Student";
+      const userEmail = res?.user?.email || "";
+      // Log out immediately so registration does not bypass login step
+      await logoutUser();
       await showRegisterSuccessAlert(userName);
-      navigate(from, { replace: true });
+      navigate("/login", {
+        replace: true,
+        state: {
+          from: targetFrom,
+          registeredEmail: userEmail,
+          autoBook: location.state?.autoBook || false,
+          justRegistered: true,
+        },
+      });
     } catch (err) {
       console.error("Google sign in error:", err);
       const errMsg = err.message || "Failed to sign in with Google.";

@@ -4,19 +4,19 @@ import { useAuth } from "../../context/AuthContext";
 import { showLoginSuccessAlert, showLoginErrorAlert } from "../../utils/alerts";
 
 const Login = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { loginUser, googleLogin } = useAuth();
+
   const [formData, setFormData] = useState({
-    email: "",
+    email: location.state?.registeredEmail || "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { loginUser, googleLogin } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname || location.state?.from || "/";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,7 +38,10 @@ const Login = () => {
       const userCredential = await loginUser(email, password);
       const userName = userCredential?.user?.displayName || userCredential?.user?.email?.split("@")[0] || "";
       await showLoginSuccessAlert(userName);
-      navigate(from, { replace: true });
+      navigate(from, {
+        replace: true,
+        state: { autoBook: location.state?.autoBook || false },
+      });
     } catch (err) {
       console.error("Login error:", err);
       let errMsg = err.message || "Failed to log in. Please try again.";
@@ -61,7 +64,10 @@ const Login = () => {
       const res = await googleLogin();
       const userName = res?.user?.displayName || "Student";
       await showLoginSuccessAlert(userName);
-      navigate(from, { replace: true });
+      navigate(from, {
+        replace: true,
+        state: { autoBook: location.state?.autoBook || false },
+      });
     } catch (err) {
       console.error("Google sign in error:", err);
       const errMsg = err.message || "Failed to sign in with Google.";
@@ -90,6 +96,16 @@ const Login = () => {
             Log in to manage your registered campus events
           </p>
         </div>
+
+        {/* Registration Success Banner */}
+        {location.state?.justRegistered && (
+          <div className="alert alert-success bg-emerald-600 text-white text-xs sm:text-sm py-3 rounded-2xl shadow-md flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>🎉 Registration successful! Please log in with your credentials to proceed.</span>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (
